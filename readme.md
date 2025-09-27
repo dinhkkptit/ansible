@@ -1,7 +1,9 @@
-```mermaid
-flowchart TD
-    A[Cache Script] --> B[Commit to Git]
-    B --> C[Refactor to Module]
-    C --> D[Incremental Updates]
-    D --> E[Branch & Merge Growth]
-    E --> F[Knowledge Base]
+gitGraph
+    commit id: "feat: add script"
+    commit id: "refactor: ansible role"
+    branch feature/dns_resolver
+    checkout feature/dns_resolver
+    commit id: "feat: dns resolver logic"
+    checkout main
+    merge feature/dns_resolver id: "merge: resolver"
+    commit id: "docs: update KB"
