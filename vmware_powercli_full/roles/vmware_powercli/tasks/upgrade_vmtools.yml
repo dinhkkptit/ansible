@@ -1,0 +1,22 @@
+---
+- name: Copy upgrade_vmtools.ps1
+  win_copy:
+    src: upgrade_vmtools.ps1
+    dest: "C:\\Temp\\upgrade_vmtools.ps1"
+
+- name: Upgrade VMware Tools
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\upgrade_vmtools.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmlist @({% for vm in vmlist %}"{{ vm }}",{% endfor %})
+  register: tools_out
+
+- debug:
+    var: tools_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\upgrade_vmtools.ps1"
+    state: absent

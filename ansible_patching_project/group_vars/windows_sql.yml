@@ -1,0 +1,14 @@
+---
+# Global defaults for Windows SQL patching group
+
+os_patch_log_dir: 'C:\PatchLogs'
+sql_patch_log_dir: 'C:\SQLPatchLogs'
+scripts_dir: 'C:\Scripts'
+
+# Example OS patches (MSU / EXE / MSI) paths on target
+os_patches:
+  - 'C:\Patches\KB5000802.msu'
+  - 'C:\Patches\KB5012599.msu'
+
+# Default SQL patch list (override in host_vars per node/version)
+sql_patches: []

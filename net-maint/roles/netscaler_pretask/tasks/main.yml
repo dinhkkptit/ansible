@@ -1,0 +1,37 @@
+---
+- name: Ensure artifacts directory exists (NetScaler)
+  ansible.builtin.file:
+    path: "{{ snapshot_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  run_once: true
+
+- name: Set run_ts if not provided
+  ansible.builtin.set_fact:
+    run_ts: "{{ lookup('pipe','date +%Y%m%d-%H%M%S') }}"
+  when: run_ts is not defined
+  run_once: true
+  delegate_to: localhost
+
+- name: NetScaler prep (disable paging)
+  ansible.netcommon.cli_command:
+    command: "{{ item }}"
+  loop: "{{ netscaler_cli_prep }}"
+
+- name: Build NetScaler PRETASK commands
+  ansible.builtin.set_fact:
+    commands: "{{ netscaler_check_cmds }}"
+
+- name: Run NetScaler PRETASK commands (one by one)
+  ansible.netcommon.cli_command:
+    command: "{{ item }}"
+  loop: "{{ commands }}"
+  register: pre
+
+- name: Write NetScaler PRETASK CSV
+  vars:
+    csv_file: "{{ snapshot_dir }}/pretask_{{ run_ts }}.csv"
+    csv_column: "pretask_{{ run_ts }}"
+    results_list: "{{ pre.results | map(attribute='stdout') | list }}"
+  import_tasks: "../../common_csv/tasks/append_phase_csv.yml"

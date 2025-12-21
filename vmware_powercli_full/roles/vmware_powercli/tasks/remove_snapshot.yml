@@ -1,0 +1,22 @@
+---
+- name: Copy remove snapshot script
+  win_copy:
+    src: remove_snapshot.ps1
+    dest: "{{ temp_script_path }}\\remove_snapshot.ps1"
+
+- name: Run remove snapshot script
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "{{ temp_script_path }}\\remove_snapshot.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmlist @({% for vm in vmlist %}"{{ vm }}",{% endfor %})
+  register: rm_snap_out
+
+- debug:
+    var: rm_snap_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "{{ temp_script_path }}\\remove_snapshot.ps1"
+    state: absent

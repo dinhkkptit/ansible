@@ -1,0 +1,17 @@
+wlan_adapter_name: "Wi-Fi 3"
+wlan_ssid: "dinhkk"
+
+wlan_connect: true
+wlan_enable_adapter: true
+wlan_disable_adapter: false
+
+wlan_profile_import: false
+wlan_profile_xml_path: ""
+wlan_profile_user: "all"   # all|current
+
+wlan_set_connectionmode_auto: true
+wlan_set_autoswitch_no: true
+
+wlan_cleanup_profiles: false
+wlan_keep_profiles:
+  - "dinhkk"

@@ -1,0 +1,10 @@
+---
+- name: Reboot NX-OS
+  cisco.nxos.nxos_reboot:
+    confirm: true
+    reboot_timeout: "{{ reboot_timeout }}"
+
+- name: Wait for device to return
+  ansible.builtin.wait_for_connection:
+    delay: 30
+    timeout: "{{ reboot_timeout }}"

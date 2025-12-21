@@ -1,0 +1,26 @@
+---
+- name: PRE - collect port-channel details
+  cisco.nxos.nxos_command:
+    commands: "{{ critical_portchannel_ids | map('regex_replace','^(.*)$','show interface port-channel \\1') | list }}"
+  register: po_pre
+  when: critical_portchannel_ids | length > 0
+
+- name: Save PRE port-channel snapshot
+  ansible.builtin.copy:
+    dest: "{{ snapshot_dir }}/{{ inventory_hostname }}_po_pre.{{ snapshot_ext }}"
+    content: "{{ po_pre.stdout | join('\\n\\n-----\\n\\n') }}"
+  delegate_to: localhost
+  when: critical_portchannel_ids | length > 0
+
+- name: Build Po baseline (was_up)
+  ansible.builtin.set_fact:
+    po_pre_state: >-
+      {{
+        po_pre_state | default({}) | combine({
+          (critical_portchannel_ids[idx] | string): ((po_pre.stdout[idx] | upper) is search('\\bIS\\s+UP\\b'))
+        })
+      }}
+  loop: "{{ range(0, critical_portchannel_ids | length) | list }}"
+  loop_control:
+    loop_var: idx
+  when: critical_portchannel_ids | length > 0

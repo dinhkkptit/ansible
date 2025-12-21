@@ -1,0 +1,32 @@
+# Auto-generated OS patch runner
+$ErrorActionPreference = "Continue"
+
+$logDir = "{{ os_patch_log_dir }}"
+if (!(Test-Path $logDir)) {
+    New-Item -Path $logDir -ItemType Directory | Out-Null
+}
+
+$logFile = Join-Path $logDir ("OSPatch_" + (Get-Date -Format yyyyMMdd_HHmmss) + ".log")
+"=== Starting OS patch run at $(Get-Date) ===" | Out-File $logFile
+
+$patches = {{ os_patches | to_json }}
+foreach ($patch in $patches) {
+    "Applying patch: $patch" | Out-File $logFile -Append
+
+    if ($patch -match '\.msu$') {
+        Start-Process wusa.exe -ArgumentList "`"$patch`" /quiet /norestart" -Wait
+    }
+    elseif ($patch -match '\.msi$') {
+        Start-Process msiexec.exe -ArgumentList "/i `"$patch`" /quiet /norestart" -Wait
+    }
+    elseif ($patch -match '\.ps1$') {
+        powershell.exe -ExecutionPolicy Bypass -NoProfile -File $patch
+    }
+    else {
+        Start-Process $patch -ArgumentList "/quiet /norestart" -Wait
+    }
+
+    "Finished patch: $patch (ExitCode=$LASTEXITCODE)" | Out-File $logFile -Append
+}
+
+"=== Completed OS patch run at $(Get-Date) ===" | Out-File $logFile -Append

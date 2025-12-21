@@ -1,0 +1,3 @@
+---
+- name: "Run requested VMware automation action"
+  include_tasks: "{{ action }}.yml"

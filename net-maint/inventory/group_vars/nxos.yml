@@ -1,0 +1,36 @@
+---
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.nxos.nxos
+ansible_become: true
+ansible_become_method: enable
+
+nxos_hosts_vpc_hsrp_ospf: ["nxos-sw01","nxos-sw02"]
+nxos_hosts_vpc_only:      ["nxos-sw03","nxos-sw04"]
+nxos_hosts_hsrp_only:     ["nxos-sw05","nxos-sw06"]
+nxos_hosts_ospf_only:     ["nxos-sw07","nxos-sw08"]
+nxos_hosts_vpc_all:       ["nxos-sw01","nxos-sw02","nxos-sw03","nxos-sw04"]
+
+nxos_vpc_peers:
+  nxos-sw01: nxos-sw02
+  nxos-sw02: nxos-sw01
+  nxos-sw03: nxos-sw04
+  nxos-sw04: nxos-sw03
+
+nxos_check_cmds_common:
+  - "show clock"
+  - "show spanning-tree summary"
+  - "show port-channel summary"
+  - "show vlan brief"
+  - "show vrf"
+
+nxos_check_cmds_vpc:
+  - "show vpc brief"
+
+nxos_check_cmds_hsrp:
+  - "show hsrp brief"
+
+nxos_check_cmds_ospf:
+  - "show ip ospf neighbor vrf all"
+
+critical_portchannel_ids: [100]
+reboot_timeout: 1800

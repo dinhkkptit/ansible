@@ -1,0 +1,9 @@
+---
+- name: Disable Wi-Fi adapter
+  hosts: windows
+  gather_facts: no
+  roles:
+    - role: windows_wlan
+      vars:
+        wlan_adapter_name: "Wi-Fi 3"
+        wlan_disable_adapter: true

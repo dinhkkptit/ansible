@@ -1,0 +1,10 @@
+---
+- name: Cleanup Wi-Fi profiles (keep only dinhkk)
+  hosts: windows
+  gather_facts: no
+  roles:
+    - role: windows_wlan
+      vars:
+        wlan_cleanup_profiles: true
+        wlan_keep_profiles:
+          - "dinhkk"

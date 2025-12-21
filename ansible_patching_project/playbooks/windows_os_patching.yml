@@ -1,0 +1,7 @@
+---
+- name: Windows OS patching only
+  hosts: windows_sql
+  gather_facts: no
+
+  roles:
+    - role: windows_os_patch

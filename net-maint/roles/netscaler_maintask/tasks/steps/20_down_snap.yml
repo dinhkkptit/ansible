@@ -1,0 +1,19 @@
+---
+- name: NetScaler MAINTASK DOWN snapshot
+  ansible.netcommon.cli_command:
+    command: "show ha node"
+  register: snap
+
+- name: Save NetScaler DOWN snapshot
+  ansible.builtin.copy:
+    dest: "{{ snapshot_dir }}/{{ inventory_hostname }}_down.{{ snapshot_ext }}"
+    content: "{{ snap.stdout }}"
+  delegate_to: localhost
+
+- name: Write NetScaler DOWN snapshot CSV
+  vars:
+    commands: ["show ha node"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_down_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_down_{{ run_ts }}"
+    results_list: ["{{ snap.stdout }}"]
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

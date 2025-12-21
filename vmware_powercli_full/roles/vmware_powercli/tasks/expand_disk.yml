@@ -1,0 +1,23 @@
+---
+- name: Copy expand disk script
+  win_copy:
+    src: expand_disk.ps1
+    dest: "{{ temp_script_path }}\\expand_disk.ps1"
+
+- name: Run expand disk script
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "{{ temp_script_path }}\\expand_disk.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmname "{{ vm_name }}" `
+      -NewSizeGB {{ new_size_gb }}
+  register: expand_output
+
+- debug:
+    var: expand_output.stdout_lines
+
+- name: Cleanup script
+  win_file:
+    path: "{{ temp_script_path }}\\expand_disk.ps1"
+    state: absent

@@ -1,0 +1,22 @@
+---
+- name: Copy esxi_postcheck.ps1
+  win_copy:
+    src: esxi_postcheck.ps1
+    dest: "C:\\Temp\\esxi_postcheck.ps1"
+
+- name: Run ESXi postcheck
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\esxi_postcheck.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -host "{{ esxi_host }}"
+  register: postcheck_out
+
+- debug:
+    var: postcheck_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\esxi_postcheck.ps1"
+    state: absent

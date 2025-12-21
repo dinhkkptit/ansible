@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  author: "dinh nguyen"
+  description: "VMware vCenter automation using PowerCLI + Ansible WinRM"
+  company: "Plus"
+  license: MIT
+dependencies: []

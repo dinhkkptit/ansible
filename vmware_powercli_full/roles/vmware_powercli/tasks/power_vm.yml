@@ -1,0 +1,23 @@
+---
+- name: Copy power VM script
+  win_copy:
+    src: power_vm.ps1
+    dest: "{{ temp_script_path }}\\power_vm.ps1"
+
+- name: Power operation
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "{{ temp_script_path }}\\power_vm.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmlist @({% for vm in vmlist %}"{{ vm }}",{% endfor %}) `
+      -action "{{ power_action }}"
+  register: power_out
+
+- debug:
+    var: power_out.stdout_lines
+
+- name: Cleanup script
+  win_file:
+    path: "{{ temp_script_path }}\\power_vm.ps1"
+    state: absent

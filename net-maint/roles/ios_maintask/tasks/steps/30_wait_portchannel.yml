@@ -1,0 +1,17 @@
+---
+- name: WAIT - EtherChannel present
+  cisco.ios.ios_command:
+    commands: ["show etherchannel summary"]
+  register: po_wait
+  until:
+    - "'PO' in (po_wait.stdout[0] | upper)"
+  retries: 40
+  delay: 10
+
+- name: Write IOS WAIT EtherChannel CSV
+  vars:
+    commands: ["show etherchannel summary"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_wait_po_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_wait_po_{{ run_ts }}"
+    results_list: "{{ po_wait.stdout }}"
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

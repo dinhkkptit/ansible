@@ -1,0 +1,19 @@
+---
+- name: WAIT - NetScaler HA stable
+  ansible.netcommon.cli_command:
+    command: "show ha node"
+  register: ha_wait
+  until:
+    - "'PRIMARY' in (ha_wait.stdout | upper) or 'SECONDARY' in (ha_wait.stdout | upper)"
+    - "'DOWN' not in (ha_wait.stdout | upper)"
+    - "'DISABLED' not in (ha_wait.stdout | upper)"
+  retries: 40
+  delay: 10
+
+- name: Write NetScaler HA WAIT CSV
+  vars:
+    commands: ["show ha node"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_wait_ha_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_wait_ha_{{ run_ts }}"
+    results_list: ["{{ ha_wait.stdout }}"]
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

@@ -1,0 +1,5 @@
+---
+sql_version: 2019
+sql_patches:
+  - 'C:\SQLPatches\SQLServer2019-KB4517790-x64.exe'   # Example SP
+  - 'C:\SQLPatches\SQL2019-KB5023049-x64.exe'         # Example CU

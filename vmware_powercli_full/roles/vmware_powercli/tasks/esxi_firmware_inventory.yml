@@ -1,0 +1,22 @@
+---
+- name: Copy esxi_firmware_inventory.ps1
+  win_copy:
+    src: esxi_firmware_inventory.ps1
+    dest: "C:\\Temp\\esxi_firmware_inventory.ps1"
+
+- name: Get ESXi firmware and driver inventory
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\esxi_firmware_inventory.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -cluster "{{ cluster_name }}"
+  register: firmware_out
+
+- debug:
+    var: firmware_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\esxi_firmware_inventory.ps1"
+    state: absent

@@ -1,0 +1,45 @@
+---
+- name: NX-OS maintenance
+  hosts: nxos
+  gather_facts: no
+  serial: 1
+  any_errors_fatal: true
+  pre_tasks:
+    - name: Guardrail - require maintenance_confirm
+      ansible.builtin.assert:
+        that: maintenance_confirm | bool
+        fail_msg: "Set -e maintenance_confirm=true to proceed."
+  roles:
+    - { role: nxos_pretask,   tags: ["pretask","nxos"] }
+    - { role: nxos_maintask,  tags: ["maintask","nxos"] }
+    - { role: nxos_posttask,  tags: ["posttask","nxos"] }
+
+- name: IOS maintenance
+  hosts: ios
+  gather_facts: no
+  serial: 1
+  any_errors_fatal: true
+  pre_tasks:
+    - name: Guardrail - require maintenance_confirm
+      ansible.builtin.assert:
+        that: maintenance_confirm | bool
+        fail_msg: "Set -e maintenance_confirm=true to proceed."
+  roles:
+    - { role: ios_pretask,   tags: ["pretask","ios"] }
+    - { role: ios_maintask,  tags: ["maintask","ios"] }
+    - { role: ios_posttask,  tags: ["posttask","ios"] }
+
+- name: NetScaler maintenance
+  hosts: netscaler
+  gather_facts: no
+  serial: 1
+  any_errors_fatal: true
+  pre_tasks:
+    - name: Guardrail - require maintenance_confirm
+      ansible.builtin.assert:
+        that: maintenance_confirm | bool
+        fail_msg: "Set -e maintenance_confirm=true to proceed."
+  roles:
+    - { role: netscaler_pretask,   tags: ["pretask","netscaler"] }
+    - { role: netscaler_maintask,  tags: ["maintask","netscaler"] }
+    - { role: netscaler_posttask,  tags: ["posttask","netscaler"] }

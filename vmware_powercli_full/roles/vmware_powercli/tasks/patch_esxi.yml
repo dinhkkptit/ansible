@@ -1,0 +1,23 @@
+---
+- name: Copy patch_esxi.ps1
+  win_copy:
+    src: patch_esxi.ps1
+    dest: "C:\\Temp\\patch_esxi.ps1"
+
+- name: Patch ESXi host
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\patch_esxi.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -host "{{ esxi_host }}" `
+      -bundlePath "{{ patch_bundle_path }}"
+  register: patch_out
+
+- debug:
+    var: patch_out.stdout_lines
+
+- name: Cleanup script
+  win_file:
+    path: "C:\\Temp\\patch_esxi.ps1"
+    state: absent

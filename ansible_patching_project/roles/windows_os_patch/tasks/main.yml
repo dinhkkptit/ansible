@@ -1,0 +1,41 @@
+---
+- name: Ensure OS log directory exists
+  ansible.windows.win_file:
+    path: "{{ os_patch_log_dir }}"
+    state: directory
+
+- name: Ensure scripts directory exists
+  ansible.windows.win_file:
+    path: "{{ scripts_dir }}"
+    state: directory
+
+- name: Deploy OS patch runner script
+  ansible.windows.win_copy:
+    dest: "{{ scripts_dir }}\\OSPatchRunner.ps1"
+    content: "{{ lookup('template', 'os_patch_runner.ps1.j2') }}"
+
+- name: Create scheduled task for OS patching
+  ansible.windows.win_scheduled_task:
+    name: "OSPatchTask"
+    actions:
+      - path: powershell.exe
+        arguments: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File {{ scripts_dir }}\\OSPatchRunner.ps1"
+    triggers:
+      - type: once
+        start_boundary: "{{ ansible_date_time.iso8601 }}"
+    run_level: highest
+    state: present
+
+- name: Start OS patch scheduled task (fire-and-forget)
+  ansible.windows.win_shell: "Start-ScheduledTask -TaskName 'OSPatchTask'"
+  async: 1
+  poll: 0
+
+- name: Wait for OS patch task to complete
+  ansible.windows.win_shell: |
+    $taskInfo = Get-ScheduledTaskInfo -TaskName 'OSPatchTask'
+    if ($taskInfo.LastTaskResult -eq 0 -and $taskInfo.LastRunTime -ne $null) { exit 0 } else { exit 1 }
+  register: os_task_status
+  retries: 240
+  delay: 30
+  until: os_task_status.rc == 0

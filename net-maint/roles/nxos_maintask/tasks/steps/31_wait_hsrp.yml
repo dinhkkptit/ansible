@@ -1,0 +1,21 @@
+---
+- name: WAIT - HSRP stable
+  cisco.nxos.nxos_command:
+    commands: ["show hsrp brief"]
+  register: hsrp_wait
+  until:
+    - "'ACTIVE' in (hsrp_wait.stdout[0] | upper) or 'STANDBY' in (hsrp_wait.stdout[0] | upper)"
+    - "'INIT' not in (hsrp_wait.stdout[0] | upper)"
+    - "'SPEAK' not in (hsrp_wait.stdout[0] | upper)"
+    - "'LISTEN' not in (hsrp_wait.stdout[0] | upper)"
+    - "'LEARN' not in (hsrp_wait.stdout[0] | upper)"
+  retries: 40
+  delay: 10
+
+- name: Write HSRP WAIT CSV
+  vars:
+    commands: ["show hsrp brief"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_wait_hsrp_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_wait_hsrp_{{ run_ts }}"
+    results_list: "{{ hsrp_wait.stdout }}"
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

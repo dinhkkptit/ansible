@@ -1,0 +1,78 @@
+---
+# ============================================================
+# vCenter Credentials
+# ============================================================
+vcenter_hostname: "vcenter01.corp.local"
+vcenter_username: "administrator@vsphere.local"
+vcenter_password: "SuperSecurePassword!"
+
+# ============================================================
+# VM list (used for snapshots, VMware Tools upgrade, HW upgrade)
+# ============================================================
+vmlist:
+  - "APP01"
+  - "APP02"
+  - "WEB01"
+  - "WEB02"
+  - "DB01"
+
+# Used for single-VM tasks (disk expansion, vMotion)
+vm_name: "APP01"
+
+# Power operation: on, off, reset, shutdown
+power_action: "on"
+
+# ============================================================
+# ESXi Hosts and Cluster definition
+# ============================================================
+cluster_name: "Prod-Cluster01"
+
+# single ESXi target for tasks (precheck, postcheck, patch)
+esxi_host: "esxi01.corp.local"
+
+# list of ESXi hosts for rolling upgrade (optional extension)
+esxi_host_list:
+  - "esxi01.corp.local"
+  - "esxi02.corp.local"
+  - "esxi03.corp.local"
+
+# Target ESXi host for vMotion
+esxi_target: "esxi03.corp.local"
+
+# Target datastore for storage vMotion
+datastore_target: "DS-SAS-TIER1"
+
+# ============================================================
+# Patch / Upgrade Variables
+# ============================================================
+# Example: ESXi 7.0 → 7.0U3 Offline Depot bundle
+# Upload this file to a datastore first
+patch_bundle_path: "[DS-ISO] ESXi70U3l-20036589-depot.zip"
+
+# Example staged patch
+stage_only: false
+
+# ============================================================
+# VM Hardware / Disk Expansion
+# ============================================================
+# Example: Increase APP01 disk to 200GB
+new_size_gb: 200
+
+# ============================================================
+# Paths for temp execution
+# ============================================================
+temp_script_path: "C:\\Temp"
+
+# ============================================================
+# Logging (Optional future expansion)
+# ============================================================
+enable_logging: true
+log_path: "C:\\Temp\\vmware_powercli.log"
+
+# ============================================================
+# Behavior Flags
+# ============================================================
+run_precheck_before_upgrade: true
+run_postcheck_after_upgrade: true
+drs_evacuate_before_patch: false
+health_check_output_format: "json"

@@ -1,0 +1,7 @@
+---
+- name: SQL Server SP/CU patching only
+  hosts: windows_sql
+  gather_facts: no
+
+  roles:
+    - role: sql_patching

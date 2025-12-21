@@ -1,0 +1,26 @@
+---
+- name: POST - collect port-channel details
+  cisco.nxos.nxos_command:
+    commands: "{{ critical_portchannel_ids | map('regex_replace','^(.*)$','show interface port-channel \\1') | list }}"
+  register: po_post
+  when: critical_portchannel_ids | length > 0
+
+- name: Save POST port-channel snapshot
+  ansible.builtin.copy:
+    dest: "{{ snapshot_dir }}/{{ inventory_hostname }}_po_up.{{ snapshot_ext }}"
+    content: "{{ po_post.stdout | join('\\n\\n-----\\n\\n') }}"
+  delegate_to: localhost
+  when: critical_portchannel_ids | length > 0
+
+- name: ASSERT - Po UP stayed UP
+  ansible.builtin.assert:
+    that:
+      - "not (po_pre_state[item | string] | default(false)) or ((po_post.stdout[idx] | upper) is search('\\bIS\\s+UP\\b'))"
+    fail_msg: |
+      Port-channel {{ item }} was UP before reboot but is NOT UP after reboot on {{ inventory_hostname }}.
+      POST:
+      {{ po_post.stdout[idx] }}
+  loop: "{{ critical_portchannel_ids }}"
+  loop_control:
+    index_var: idx
+  when: critical_portchannel_ids | length > 0

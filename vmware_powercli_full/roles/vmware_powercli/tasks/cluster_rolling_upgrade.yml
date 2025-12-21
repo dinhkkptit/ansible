@@ -1,0 +1,23 @@
+---
+- name: Copy cluster_rolling_upgrade.ps1
+  win_copy:
+    src: cluster_rolling_upgrade.ps1
+    dest: "C:\\Temp\\cluster_rolling_upgrade.ps1"
+
+- name: Perform rolling cluster upgrade
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\cluster_rolling_upgrade.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -cluster "{{ cluster_name }}" `
+      -bundlePath "{{ patch_bundle_path }}"
+  register: clu_upgrade_out
+
+- debug:
+    var: clu_upgrade_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\cluster_rolling_upgrade.ps1"
+    state: absent

@@ -1,0 +1,14 @@
+---
+- name: Enable adapter and connect to Wi-Fi
+  hosts: windows
+  gather_facts: no
+  roles:
+    - role: windows_wlan
+      vars:
+        wlan_adapter_name: "Wi-Fi 3"
+        wlan_ssid: "dinhkk"
+        wlan_profile_import: false
+        wlan_connect: true
+        wlan_enable_adapter: true
+        wlan_set_connectionmode_auto: true
+        wlan_set_autoswitch_no: true

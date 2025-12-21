@@ -1,0 +1,87 @@
+\
+---
+- name: Disable Wi-Fi adapter (if requested)
+  ansible.windows.win_shell: |
+    $n = "{{ wlan_adapter_name }}"
+    $a = Get-NetAdapter -Name $n -ErrorAction Stop
+    if ($a.Status -ne "Disabled") {
+      Disable-NetAdapter -Name $n -Confirm:$false | Out-Null
+      Write-Output "Disabled: $n"
+    } else {
+      Write-Output "Already disabled: $n"
+    }
+  when: wlan_disable_adapter | bool
+  tags: [disable]
+
+- name: Import Wi-Fi profile XML (optional)
+  ansible.windows.win_shell: |
+    $path = "{{ wlan_profile_xml_path }}"
+    if ([string]::IsNullOrWhiteSpace($path)) { throw "wlan_profile_xml_path is empty but wlan_profile_import=true" }
+    if (-not (Test-Path $path)) { throw "Profile XML not found: $path" }
+    $u = "{{ wlan_profile_user }}"
+    netsh wlan add profile filename="$path" user=$u | Out-Null
+    Write-Output "Imported profile from: $path (user=$u)"
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_profile_import | bool
+  tags: [import]
+
+- name: Enable Wi-Fi adapter (if requested and not Up)
+  ansible.windows.win_shell: |
+    $n = "{{ wlan_adapter_name }}"
+    $a = Get-NetAdapter -Name $n -ErrorAction Stop
+    if ($a.Status -ne "Up") {
+      Enable-NetAdapter -Name $n -Confirm:$false | Out-Null
+      Start-Sleep -Seconds 2
+      Write-Output "Enabled: $n"
+    } else {
+      Write-Output "Already up: $n"
+    }
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_enable_adapter | bool
+  tags: [enable]
+
+- name: Set profile connectionmode=auto (optional)
+  ansible.windows.win_shell: |
+    netsh wlan set profileparameter name="{{ wlan_ssid }}" connectionmode=auto | Out-Null
+    Write-Output "Set connectionmode=auto for {{ wlan_ssid }}"
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_set_connectionmode_auto | bool
+  tags: [profile_params]
+
+- name: Set profile autoswitch=no (optional)
+  ansible.windows.win_shell: |
+    netsh wlan set profileparameter name="{{ wlan_ssid }}" autoswitch=no | Out-Null
+    Write-Output "Set autoswitch=no for {{ wlan_ssid }}"
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_set_autoswitch_no | bool
+  tags: [profile_params]
+
+- name: Connect to Wi-Fi profile/SSID (optional)
+  ansible.windows.win_shell: |
+    netsh wlan connect name="{{ wlan_ssid }}" | Out-Null
+    Write-Output "Connect requested to {{ wlan_ssid }}"
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_connect | bool
+  tags: [connect]
+
+- name: Cleanup Wi-Fi profiles (delete everything except keep list)
+  ansible.windows.win_shell: |
+    $keep = @({% for p in wlan_keep_profiles %}"{{ p }}"{% if not loop.last %}, {% endif %}{% endfor %})
+    $profiles = (netsh wlan show profiles) |
+      Select-String "All User Profile" |
+      ForEach-Object { ($_ -split ":\s*",2)[1].Trim() }
+
+    foreach ($p in $profiles) {
+      if ($keep -contains $p) { continue }
+      netsh wlan delete profile name="$p" | Out-Null
+      Write-Output "Deleted profile: $p"
+    }
+  when:
+    - not (wlan_disable_adapter | bool)
+    - wlan_cleanup_profiles | bool
+  tags: [cleanup]

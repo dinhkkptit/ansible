@@ -1,0 +1,23 @@
+---
+- name: Copy maintenance script
+  win_copy:
+    src: maintenance.ps1
+    dest: "{{ temp_script_path }}\\maintenance.ps1"
+
+- name: Run maintenance mode script
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "{{ temp_script_path }}\\maintenance.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -host "{{ esxi_host }}" `
+      -mode "{{ mode }}"
+  register: mm_out
+
+- debug:
+    var: mm_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "{{ temp_script_path }}\\maintenance.ps1"
+    state: absent

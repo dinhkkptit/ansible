@@ -1,0 +1,22 @@
+---
+- name: Copy apply_staged_patch.ps1
+  win_copy:
+    src: apply_staged_patch.ps1
+    dest: "C:\\Temp\\apply_staged_patch.ps1"
+
+- name: Apply staged patch
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\apply_staged_patch.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -host "{{ esxi_host }}"
+  register: staged_out
+
+- debug:
+    var: staged_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\apply_staged_patch.ps1"
+    state: absent

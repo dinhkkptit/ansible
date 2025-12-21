@@ -1,0 +1,16 @@
+---
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.ios.ios
+ansible_become: false
+
+netscaler_cli_prep:
+  - "set cli mode -page OFF"
+  - "set cli mode -color OFF"
+
+netscaler_check_cmds:
+  - "show ha node"
+  - "show lb vserver"
+  - "show service"
+  - "show servicegroup"
+
+reboot_timeout: 1800

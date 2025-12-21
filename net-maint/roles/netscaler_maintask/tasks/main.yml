@@ -1,0 +1,11 @@
+---
+- name: MAINTASK guard - only run selected hosts when target_hosts_csv is set
+  ansible.builtin.meta: end_host
+  when:
+    - target_hosts_csv is defined
+    - inventory_hostname not in (target_hosts_csv.split(',') | map('trim') | list)
+
+- import_tasks: steps/10_pre_snap.yml
+- import_tasks: steps/20_down_snap.yml
+- import_tasks: steps/30_wait_ha.yml
+- import_tasks: steps/90_up_snap.yml

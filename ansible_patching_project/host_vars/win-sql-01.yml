@@ -1,0 +1,6 @@
+---
+sql_version: 2016
+sql_patches:
+  - 'C:\SQLPatches\SQLServer2016SP2.exe'
+  - 'C:\SQLPatches\SQL2016-KB5001092-x64.exe'
+  - 'C:\SQLPatches\SQL2016-CU18.exe'

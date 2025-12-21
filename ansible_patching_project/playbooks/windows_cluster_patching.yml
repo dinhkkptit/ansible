@@ -1,0 +1,33 @@
+---
+- name: Cluster-safe Windows + SQL patching
+  hosts: windows_sql
+  serial: 1
+  gather_facts: no
+  strategy: free
+
+  pre_tasks:
+    - name: Drain cluster node (if Failover Clustering module present)
+      ansible.windows.win_shell: |
+        if (Get-Command Suspend-ClusterNode -ErrorAction SilentlyContinue) {
+          Suspend-ClusterNode -Name $env:COMPUTERNAME -Drain
+        }
+      changed_when: false
+      failed_when: false
+
+  roles:
+    - role: windows_os_patch
+    - role: sql_patching
+
+  post_tasks:
+    - name: Reboot node after patching
+      ansible.windows.win_reboot:
+        post_reboot_delay: 60
+        reboot_timeout: 3600
+
+    - name: Resume cluster node (if Failover Clustering module present)
+      ansible.windows.win_shell: |
+        if (Get-Command Resume-ClusterNode -ErrorAction SilentlyContinue) {
+          Resume-ClusterNode -Name $env:COMPUTERNAME
+        }
+      changed_when: false
+      failed_when: false

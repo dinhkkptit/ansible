@@ -1,0 +1,21 @@
+# Auto-generated SQL CU patch runner
+$ErrorActionPreference = "Continue"
+
+$logDir = "{{ sql_patch_log_dir }}"
+if (!(Test-Path $logDir)) {
+    New-Item -Path $logDir -ItemType Directory | Out-Null
+}
+
+$logFile = Join-Path $logDir ("SQL_CU_" + (Get-Date -Format yyyyMMdd_HHmmss) + ".log")
+"=== Starting SQL CU patch run at $(Get-Date) ===" | Out-File $logFile
+
+$patches = {{ sql_cu_patches | default([]) | to_json }}
+foreach ($patch in $patches) {
+    "Applying CU patch: $patch" | Out-File $logFile -Append
+
+    Start-Process $patch -ArgumentList "/q /action=patch /allinstances /IAcceptSQLServerLicenseTerms" -Wait
+
+    "Finished CU patch: $patch (ExitCode=$LASTEXITCODE)" | Out-File $logFile -Append
+}
+
+"=== Completed SQL CU patch run at $(Get-Date) ===" | Out-File $logFile -Append

@@ -1,0 +1,23 @@
+---
+- name: Ensure CSV exists with header
+  ansible.builtin.copy:
+    dest: "{{ csv_file }}"
+    content: "timestamp,hostname,command,{{ csv_column }}\n"
+    force: false
+  delegate_to: localhost
+  run_once: false
+
+- name: Append rows to CSV
+  ansible.builtin.lineinfile:
+    path: "{{ csv_file }}"
+    insertafter: EOF
+    create: true
+    line: >-
+      {{ lookup('pipe','date -Iseconds') }},
+      {{ inventory_hostname }},
+      {{ commands[idx] | to_json }},
+      {{ results_list[idx] | regex_replace('\r','') | regex_replace('\n','\\n') | to_json }}
+  delegate_to: localhost
+  loop: "{{ range(0, commands | length) | list }}"
+  loop_control:
+    loop_var: idx

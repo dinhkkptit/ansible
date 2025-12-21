@@ -1,0 +1,22 @@
+---
+- name: WAIT - OSPF converged
+  cisco.nxos.nxos_command:
+    commands: ["show ip ospf neighbor vrf all"]
+  register: ospf_wait
+  until:
+    - "'FULL' in (ospf_wait.stdout[0] | upper)"
+    - "'INIT' not in (ospf_wait.stdout[0] | upper)"
+    - "'2WAY' not in (ospf_wait.stdout[0] | upper)"
+    - "'EXSTART' not in (ospf_wait.stdout[0] | upper)"
+    - "'EXCHANGE' not in (ospf_wait.stdout[0] | upper)"
+    - "'LOADING' not in (ospf_wait.stdout[0] | upper)"
+  retries: 40
+  delay: 15
+
+- name: Write OSPF WAIT CSV
+  vars:
+    commands: ["show ip ospf neighbor vrf all"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_wait_ospf_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_wait_ospf_{{ run_ts }}"
+    results_list: "{{ ospf_wait.stdout }}"
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

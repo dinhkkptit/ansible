@@ -1,0 +1,25 @@
+---
+- name: IOS MAINTASK PRE snapshot commands
+  ansible.builtin.set_fact:
+    commands:
+      - "show clock"
+      - "show etherchannel summary"
+      - "show spanning-tree summary"
+
+- name: Run IOS PRE snapshot commands
+  cisco.ios.ios_command:
+    commands: "{{ commands }}"
+  register: snap
+
+- name: Save IOS PRE snapshot text
+  ansible.builtin.copy:
+    dest: "{{ snapshot_dir }}/{{ inventory_hostname }}_pre.{{ snapshot_ext }}"
+    content: "{{ snap.stdout | join('\n\n-----\n\n') }}"
+  delegate_to: localhost
+
+- name: Write IOS PRE snapshot CSV
+  vars:
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_pre_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_pre_{{ run_ts }}"
+    results_list: "{{ snap.stdout }}"
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

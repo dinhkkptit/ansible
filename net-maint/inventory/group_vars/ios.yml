@@ -1,0 +1,13 @@
+---
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.ios.ios
+ansible_become: true
+ansible_become_method: enable
+
+ios_check_cmds:
+  - "show clock"
+  - "show spanning-tree summary"
+  - "show etherchannel summary"
+  - "show vlan brief"
+
+reboot_timeout: 1800

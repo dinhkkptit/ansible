@@ -1,0 +1,24 @@
+---
+- name: Copy vmotion script
+  win_copy:
+    src: vmotion.ps1
+    dest: "{{ temp_script_path }}\\vmotion.ps1"
+
+- name: Run vMotion command
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "{{ temp_script_path }}\\vmotion.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmname "{{ vm_name }}" `
+      -target_host "{{ esxi_target }}" `
+      -target_datastore "{{ datastore_target }}"
+  register: vmotion_out
+
+- debug:
+    var: vmotion_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "{{ temp_script_path }}\\vmotion.ps1"
+    state: absent

@@ -1,0 +1,21 @@
+---
+- name: Copy vcenter_update_check.ps1
+  win_copy:
+    src: vcenter_update_check.ps1
+    dest: "C:\\Temp\\vcenter_update_check.ps1"
+
+- name: Check vCenter updates
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\vcenter_update_check.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}"
+  register: vc_update_out
+
+- debug:
+    var: vc_update_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\vcenter_update_check.ps1"
+    state: absent

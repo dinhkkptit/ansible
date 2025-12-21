@@ -1,0 +1,19 @@
+---
+- name: WAIT - vPC healthy
+  cisco.nxos.nxos_command:
+    commands: ["show vpc brief"]
+  register: vpc_wait
+  until:
+    - "'PEER ADJACENCY FORMED OK' in (vpc_wait.stdout[0] | upper)"
+    - "'PEER IS ALIVE' in (vpc_wait.stdout[0] | upper)"
+    - "'DOWN' not in (vpc_wait.stdout[0] | upper)"
+  retries: 40
+  delay: 15
+
+- name: Write vPC WAIT CSV
+  vars:
+    commands: ["show vpc brief"]
+    csv_file: "{{ snapshot_dir }}/maintask_{{ inventory_hostname }}_wait_vpc_{{ run_ts }}.csv"
+    csv_column: "maintask_{{ inventory_hostname }}_wait_vpc_{{ run_ts }}"
+    results_list: "{{ vpc_wait.stdout }}"
+  import_tasks: "../../../common_csv/tasks/append_phase_csv.yml"

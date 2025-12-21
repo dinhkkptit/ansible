@@ -1,0 +1,22 @@
+---
+- name: Copy upgrade_vmhardware.ps1
+  win_copy:
+    src: upgrade_vmhardware.ps1
+    dest: "C:\\Temp\\upgrade_vmhardware.ps1"
+
+- name: Upgrade VM Hardware
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\upgrade_vmhardware.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -vmlist @({% for vm in vmlist %}"{{ vm }}",{% endfor %})
+  register: hw_out
+
+- debug:
+    var: hw_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\upgrade_vmhardware.ps1"
+    state: absent

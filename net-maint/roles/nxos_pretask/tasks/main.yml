@@ -1,0 +1,37 @@
+---
+- name: Ensure artifacts directory exists (NX-OS)
+  ansible.builtin.file:
+    path: "{{ snapshot_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  run_once: true
+
+- name: Set run_ts if not provided
+  ansible.builtin.set_fact:
+    run_ts: "{{ lookup('pipe','date +%Y%m%d-%H%M%S') }}"
+  when: run_ts is not defined
+  run_once: true
+  delegate_to: localhost
+
+- name: Build NX-OS PRETASK commands
+  ansible.builtin.set_fact:
+    commands: >-
+      {{
+        nxos_check_cmds_common
+        + (nxos_check_cmds_vpc  if inventory_hostname in (nxos_hosts_vpc_hsrp_ospf + nxos_hosts_vpc_only) else [])
+        + (nxos_check_cmds_hsrp if inventory_hostname in (nxos_hosts_vpc_hsrp_ospf + nxos_hosts_hsrp_only) else [])
+        + (nxos_check_cmds_ospf if inventory_hostname in (nxos_hosts_vpc_hsrp_ospf + nxos_hosts_ospf_only) else [])
+      }}
+
+- name: Run NX-OS PRETASK commands
+  cisco.nxos.nxos_command:
+    commands: "{{ commands }}"
+  register: pre
+
+- name: Write NX-OS PRETASK CSV
+  vars:
+    csv_file: "{{ snapshot_dir }}/pretask_{{ run_ts }}.csv"
+    csv_column: "pretask_{{ run_ts }}"
+    results_list: "{{ pre.stdout }}"
+  import_tasks: "../../common_csv/tasks/append_phase_csv.yml"

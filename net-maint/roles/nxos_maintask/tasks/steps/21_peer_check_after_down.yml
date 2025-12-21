@@ -1,0 +1,20 @@
+---
+- name: Determine vPC peer
+  ansible.builtin.set_fact:
+    vpc_peer: "{{ nxos_vpc_peers[inventory_hostname] }}"
+
+- name: Peer check on vPC peer
+  cisco.nxos.nxos_command:
+    commands:
+      - "show vpc brief"
+      - "show hsrp brief"
+      - "show ip ospf neighbor vrf all"
+      - "show port-channel summary"
+  delegate_to: "{{ vpc_peer }}"
+  register: peer
+
+- name: Save peer-check snapshot text
+  ansible.builtin.copy:
+    dest: "{{ snapshot_dir }}/{{ vpc_peer }}_peercheck_after_{{ inventory_hostname }}_down.{{ snapshot_ext }}"
+    content: "{{ peer.stdout | join('\n\n-----\n\n') }}"
+  delegate_to: localhost

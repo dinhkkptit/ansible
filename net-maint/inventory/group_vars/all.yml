@@ -1,0 +1,9 @@
+---
+maintenance_id: "CHG-0000"
+maintenance_confirm: false
+
+snapshot_dir: "./artifacts/{{ maintenance_id }}"
+snapshot_ext: "txt"
+
+# optional: pass -e run_ts=20251210-140000 to control this manually
+# otherwise each host can set its own run_ts via set_fact if desired

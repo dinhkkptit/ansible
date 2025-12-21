@@ -1,0 +1,23 @@
+---
+- name: Copy stage_patch.ps1
+  win_copy:
+    src: stage_patch.ps1
+    dest: "C:\\Temp\\stage_patch.ps1"
+
+- name: Stage ESXi Patch
+  win_shell: |
+    powershell.exe -ExecutionPolicy Bypass "C:\\Temp\\stage_patch.ps1" `
+      -vcenter "{{ vcenter_hostname }}" `
+      -username "{{ vcenter_username }}" `
+      -password "{{ vcenter_password }}" `
+      -host "{{ esxi_host }}" `
+      -bundlePath "{{ patch_bundle_path }}"
+  register: stage_out
+
+- debug:
+    var: stage_out.stdout_lines
+
+- name: Cleanup
+  win_file:
+    path: "C:\\Temp\\stage_patch.ps1"
+    state: absent

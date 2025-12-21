@@ -1,0 +1,31 @@
+---
+- name: Ensure artifacts directory exists (IOS)
+  ansible.builtin.file:
+    path: "{{ snapshot_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  run_once: true
+
+- name: Set run_ts if not provided
+  ansible.builtin.set_fact:
+    run_ts: "{{ lookup('pipe','date +%Y%m%d-%H%M%S') }}"
+  when: run_ts is not defined
+  run_once: true
+  delegate_to: localhost
+
+- name: Build IOS PRETASK commands
+  ansible.builtin.set_fact:
+    commands: "{{ ios_check_cmds }}"
+
+- name: Run IOS PRETASK commands
+  cisco.ios.ios_command:
+    commands: "{{ commands }}"
+  register: pre
+
+- name: Write IOS PRETASK CSV
+  vars:
+    csv_file: "{{ snapshot_dir }}/pretask_{{ run_ts }}.csv"
+    csv_column: "pretask_{{ run_ts }}"
+    results_list: "{{ pre.stdout }}"
+  import_tasks: "../../common_csv/tasks/append_phase_csv.yml"
